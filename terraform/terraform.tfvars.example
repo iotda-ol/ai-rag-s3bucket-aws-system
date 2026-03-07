@@ -1,0 +1,29 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Required
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Your AWS CLI profile name (the only required variable)
+aws_profile = "default"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Optional overrides (defaults shown)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# aws_region   = "us-east-1"
+# project_name = "rag-system"
+# environment  = "dev"
+
+# ── Bedrock models ────────────────────────────────────────────────────────────
+# bedrock_embedding_model_id  = "amazon.titan-embed-text-v2:0"
+# bedrock_foundation_model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
+# vector_dimensions           = 1024
+
+# ── Lambda ────────────────────────────────────────────────────────────────────
+# lambda_timeout     = 60
+# lambda_memory_size = 512
+
+# ── Extra tags ────────────────────────────────────────────────────────────────
+# tags = {
+#   Owner      = "platform-team"
+#   CostCenter = "ai-ml"
+# }
