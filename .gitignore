@@ -1,6 +1,7 @@
 # Terraform
 .terraform/
-.terraform.lock.hcl
+# .terraform.lock.hcl is intentionally tracked in version control
+# so that all team members and CI use the exact same provider versions.
 *.tfplan
 terraform.tfvars
 *.tfstate

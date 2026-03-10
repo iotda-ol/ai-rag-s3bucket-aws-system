@@ -42,6 +42,11 @@ variable "vector_dimensions" {
   description = "Embedding vector dimensions (must match the chosen embedding model)"
   type        = number
   default     = 1024
+
+  validation {
+    condition     = var.vector_dimensions > 0 && var.vector_dimensions <= 16000
+    error_message = "Vector dimensions must be between 1 and 16000."
+  }
 }
 
 variable "opensearch_index_name" {
@@ -60,12 +65,33 @@ variable "lambda_timeout" {
   description = "Lambda function timeout in seconds"
   type        = number
   default     = 60
+
+  validation {
+    condition     = var.lambda_timeout >= 1 && var.lambda_timeout <= 900
+    error_message = "Lambda timeout must be between 1 and 900 seconds."
+  }
 }
 
 variable "lambda_memory_size" {
   description = "Lambda function memory size in MB"
   type        = number
   default     = 512
+
+  validation {
+    condition     = var.lambda_memory_size >= 128 && var.lambda_memory_size <= 10240 && var.lambda_memory_size % 64 == 0
+    error_message = "Lambda memory size must be between 128 and 10240 MB and a multiple of 64."
+  }
+}
+
+variable "lambda_reserved_concurrent_executions" {
+  description = "Reserved concurrent executions for the Lambda function. Use -1 for unreserved (default: 10 to prevent runaway invocations)."
+  type        = number
+  default     = 10
+
+  validation {
+    condition     = var.lambda_reserved_concurrent_executions >= -1
+    error_message = "Reserved concurrent executions must be -1 (unreserved) or a non-negative integer."
+  }
 }
 
 variable "tags" {

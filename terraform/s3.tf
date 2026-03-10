@@ -56,6 +56,23 @@ resource "aws_s3_bucket_policy" "logs_tls" {
   })
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "logs" {
+  bucket = aws_s3_bucket.logs.id
+
+  rule {
+    id     = "expire-access-logs"
+    status = "Enabled"
+
+    expiration {
+      days = 90
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 7
+    }
+  }
+}
+
 # ── Documents bucket ─────────────────────────────────────────────────────────
 
 resource "aws_s3_bucket" "documents" {
@@ -64,6 +81,10 @@ resource "aws_s3_bucket" "documents" {
   tags = merge(local.common_tags, {
     Name = "${local.name_prefix}-documents"
   })
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "aws_s3_bucket_versioning" "documents" {

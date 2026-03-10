@@ -33,9 +33,19 @@ output "lambda_function_name" {
   value       = aws_lambda_function.rag_query.function_name
 }
 
+output "lambda_function_alias" {
+  description = "Lambda function live alias name"
+  value       = aws_lambda_alias.rag_query_live.name
+}
+
 output "lambda_function_url" {
   description = "Lambda function URL (requires AWS_IAM SigV4 auth)"
   value       = aws_lambda_function_url.rag_query.function_url
+}
+
+output "lambda_dlq_arn" {
+  description = "ARN of the Lambda dead-letter SQS queue"
+  value       = aws_sqs_queue.lambda_dlq.arn
 }
 
 output "kms_key_id" {
