@@ -21,6 +21,7 @@ aws_profile = "default"
 # ── Lambda ────────────────────────────────────────────────────────────────────
 # lambda_timeout     = 60
 # lambda_memory_size = 512
+# lambda_reserved_concurrent_executions = 10   # -1 = unreserved
 
 # ── Extra tags ────────────────────────────────────────────────────────────────
 # tags = {

@@ -133,15 +133,26 @@ resource "aws_iam_role_policy" "lambda_bedrock" {
 
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "bedrock:InvokeModel",
-        "bedrock:Retrieve",
-        "bedrock:RetrieveAndGenerate",
-      ]
-      Resource = ["*"]
-    }]
+    Statement = [
+      {
+        Sid    = "InvokeFoundationModels"
+        Effect = "Allow"
+        Action = ["bedrock:InvokeModel"]
+        Resource = [
+          "arn:${data.aws_partition.current.partition}:bedrock:${var.aws_region}::foundation-model/${var.bedrock_foundation_model_id}",
+          "arn:${data.aws_partition.current.partition}:bedrock:${var.aws_region}::foundation-model/${var.bedrock_embedding_model_id}",
+        ]
+      },
+      {
+        Sid    = "RetrieveFromKnowledgeBase"
+        Effect = "Allow"
+        Action = [
+          "bedrock:Retrieve",
+          "bedrock:RetrieveAndGenerate",
+        ]
+        Resource = [aws_bedrockagent_knowledge_base.main.arn]
+      },
+    ]
   })
 }
 
@@ -212,6 +223,21 @@ resource "aws_iam_role_policy" "lambda_s3" {
         aws_s3_bucket.documents.arn,
         "${aws_s3_bucket.documents.arn}/*",
       ]
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "lambda_dlq" {
+  name = "${local.name_prefix}-lambda-dlq"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid      = "SendToDLQ"
+      Effect   = "Allow"
+      Action   = ["sqs:SendMessage"]
+      Resource = [aws_sqs_queue.lambda_dlq.arn]
     }]
   })
 }

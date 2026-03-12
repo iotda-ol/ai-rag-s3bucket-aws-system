@@ -179,11 +179,12 @@ curl -X POST "$FUNC_URL" \
 | `environment` | | `dev` | `dev` / `staging` / `prod` |
 | `bedrock_embedding_model_id` | | `amazon.titan-embed-text-v2:0` | Embedding model |
 | `bedrock_foundation_model_id` | | `anthropic.claude-3-sonnet-20240229-v1:0` | Generation model |
-| `vector_dimensions` | | `1024` | Must match the embedding model |
+| `vector_dimensions` | | `1024` | Must match the embedding model (1–16000) |
 | `opensearch_index_name` | | `rag-knowledge-base` | OpenSearch index name |
 | `s3_document_prefix` | | `documents/` | S3 key prefix for source docs |
-| `lambda_timeout` | | `60` | Lambda timeout (seconds) |
-| `lambda_memory_size` | | `512` | Lambda memory (MB) |
+| `lambda_timeout` | | `60` | Lambda timeout in seconds (1–900) |
+| `lambda_memory_size` | | `512` | Lambda memory in MB (128–10240, multiple of 64) |
+| `lambda_reserved_concurrent_executions` | | `10` | Reserved Lambda concurrency; `-1` = unreserved |
 | `tags` | | `{}` | Additional resource tags |
 
 ---
@@ -258,9 +259,26 @@ terraform -chdir=terraform destroy
 
 ## Security notes
 
-- All data at rest is encrypted with a **customer-managed KMS key** (annual rotation enabled).
+- All data at rest is encrypted with a **customer-managed KMS key** (annual rotation enabled, 30-day deletion window).
 - The S3 bucket policy enforces **TLS-only** access.
 - The Lambda function URL requires **AWS IAM SigV4** authentication.
 - All runtime configuration lives in **Secrets Manager** – no secrets in environment variables or source code.
 - IAM roles follow **least-privilege**: each role only has the actions it needs on the exact resources it needs.
+- The Lambda Bedrock IAM policy is scoped to specific foundation-model and knowledge-base ARNs (no `Resource: *`).
+- The Lambda function has **reserved concurrent executions** (default: 10) to prevent runaway invocations and cost spikes.
+- A **dead-letter SQS queue** (encrypted with the CMK) captures any failed async Lambda invocations.
+- The documents S3 bucket and KMS key have `prevent_destroy = true` to guard against accidental `terraform destroy`.
+- Access logs on the logs bucket expire after **90 days** to control storage costs.
+
+---
+
+## Remote state (recommended for teams)
+
+Terraform state should be stored remotely for any shared or production deployment.
+`providers.tf` contains a commented-out `backend "s3"` block with step-by-step instructions.
+Create the S3 bucket and DynamoDB lock table, fill in the values, uncomment the block,
+then run `terraform init -reconfigure`.
+
+The `.terraform.lock.hcl` dependency lock file **is committed to version control** so that
+all contributors and CI pipelines use exactly the same provider versions.
 
